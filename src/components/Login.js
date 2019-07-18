@@ -1,31 +1,44 @@
 import React, { Component } from 'react';
 import { Redirect } from 'react-router-dom';
 import OutlinedInput from '@material-ui/core/OutlinedInput';
-import ReactDOM from 'react-dom';
-import $ from 'jquery';
+import cogoToast from 'cogo-toast';
+import Cookies from 'universal-cookie';
+
+const cookies = new Cookies();
 
 class Login extends Component {
   constructor() {
-    super();
+    super();    
     this.state = {
       email_id: '',
       password: '',
       redirect_after_login_successful: false,
-      valid_email: false
+      valid_email: false,      
+      user_logged_in_token: cookies.get('_toy-app-psql_session'),
+      x: 0
     };
 
-    this.emailValidCheck = this.emailValidCheck.bind(this);
-  }
-
-  componentDidMount() {
-    $(document).ready(() => {
-      var email = ReactDOM.findDOMNode(this.refs.user_email).value;
-      console.log(email);
-    })    
+    this.emailValidCheck = this.emailValidCheck.bind(this); 
+    this.checkOnce = this.checkOnce.bind(this); 
+    fetch('http://localhost:3000/logged_in', {
+      method: 'GET',
+      credentials : 'include'
+    }).then(
+      response => {
+        response.json().then((op) => {                   
+          console.log(op);
+        });
+      }
+    );    
+    
   }
 
   handleUpload = (event) => {
     event.preventDefault();
+    if(!this.state.valid_email) {
+      cogoToast.error('Please enter a valid email address');
+      return;
+    }    
     const data = new FormData(event.target);
     var targetUrl = 'http://localhost:3000/login';
     fetch(targetUrl, {
@@ -40,6 +53,10 @@ class Login extends Component {
               redirect_after_login_successful: true
             })
           }
+          if(op["logged_in"] === false) {
+            cogoToast.error('Incorrect password');
+            return;
+          }
         });
       }
     );
@@ -47,7 +64,7 @@ class Login extends Component {
 
   emailValidCheck(ev) {
     var email_entered = ev.target.value;
-    if (/^[a-zA-Z0-9]+@[a-zA-Z0-9]+\.[A-Za-z]+$/.test(email_entered)) {
+    if (/^[a-zA-Z0-9\.]+@[a-zA-Z0-9]+\.[A-Za-z]+$/.test(email_entered)) {
       this.setState({
         valid_email: true
       })
@@ -59,7 +76,30 @@ class Login extends Component {
     }
   }
 
-  render() {
+  componentDidMount() {
+    this.setState({
+      x: 1,
+      user_logged_in_token: cookies.get('user_token')
+    })
+    this.forceUpdate();
+    console.log("document.cookie" + document.cookie);
+  }
+
+  checkOnce() {    
+    this.setState({
+      x: 1,
+      user_logged_in_token: cookies.get('user_token')
+    })
+    console.log("IN CHECK ONCE: user_logged_in_token= " + this.state.user_logged_in_token);
+    console.log("document.cookie" + document.cookie);
+  }
+
+  render() {    
+    if(this.state.x === 0) this.checkOnce();
+    if(this.state.user_logged_in_token !== undefined) {
+      cogoToast.info('You are already logged in. Cannot log in again');
+      return <Redirect to='/index' />
+    }
     if (this.state.redirect_after_login_successful === true) {
       return <Redirect to='/rates' />
     }
@@ -81,6 +121,8 @@ class Login extends Component {
           <OutlinedInput style={{fontSize: '15px', fontFamily: 'Poppins', width: '300px'}}  name="password" type="password"></OutlinedInput>
           <br /><br />
           <input style={{backgroundColor: 'DodgerBlue', color: 'white', width: '300px', 'height': '50px'}} type="submit" value="Submit"></input>
+          <br /><br />
+          Not registered yet? <a href="http://localhost:3001/signup">Sign up here.</a>
         </form>
         </center>
       </div>

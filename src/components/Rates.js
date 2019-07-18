@@ -5,6 +5,7 @@ import Autosuggest from 'react-autosuggest';
 import AutosuggestHighlightMatch from 'autosuggest-highlight/match';
 import AutosuggestHighlightParse from 'autosuggest-highlight/parse';
 import Tooltip from '@material-ui/core/Tooltip';
+import Loader from 'react-loader-spinner'
 
 const containerTypes = [
     {
@@ -26,13 +27,11 @@ const containerTypes = [
 
 var shippingLines = {}
 
-function getSuggestionValue(suggestion) {
-    console.log("CALLED");
+function getSuggestionValue(suggestion) {    
     return suggestion.display_name;
 }
   
-function renderSuggestion(suggestion, { query }) {
-    console.log("RENDER SUGGESTION CALLED");
+function renderSuggestion(suggestion, { query }) {    
     const matches = AutosuggestHighlightMatch(suggestion.display_name, query);
     const parts = AutosuggestHighlightParse(suggestion.display_name, matches);
   
@@ -75,7 +74,8 @@ class Rates extends Component {
             conttypevalue: '',
             suggestions: [],
             contTypeSuggestions: [],            
-            companyNames: []       
+            companyNames: [],
+            open: false      
         };        
         this.handleUpload = this.handleUpload.bind(this);
         this.handlePageChange = this.handlePageChange.bind(this);
@@ -83,7 +83,9 @@ class Rates extends Component {
         this.handleDestKeyUp = this.keyUpHandler.bind(this, 'refdestportid'); 
         this.getSuggestions = this.getSuggestions.bind(this);   
         this.getContTypeSuggestions = this.getContTypeSuggestions.bind(this); 
-        // this.renderTooltip = this.renderTooltip.bind(this);        
+        this.renderTooltip = this.renderTooltip.bind(this);
+        this.handleTooltipClose = this.handleTooltipClose.bind(this);
+        this.handleTooltipOpen = this.handleTooltipOpen.bind(this);
     }
 
     getSuggestions(value) {
@@ -157,6 +159,7 @@ class Rates extends Component {
     handleUpload(event){    
         event.preventDefault();
         const data = new FormData(event.target);
+        document.getElementById("spinner").style.display = "block";
         // var targetUrl = 'http://localhost:3000/rates';
         var targetUrl = 'http://localhost:3000/get_load_rates';
         var originportvalue = document.getElementById('originportid').value
@@ -171,7 +174,8 @@ class Rates extends Component {
             credentials : 'include'
           }).then(
             response => {
-              response.json().then((res) => {    
+              response.json().then((res) => { 
+                document.getElementById("spinner").style.display = "none";  
                 this.setState({
                   totalLoads: res.numLoads, // Total loads
                   totalPages: res.numPages, // Total pages
@@ -228,13 +232,31 @@ class Rates extends Component {
         });
     };
 
-    // renderTooltip(index) {
-    //     return(
-    //         <Tooltip onClose={handleTooltipClose} onOpen={handleTooltipOpen} open={open} title="Add">
-    //             SHEET TYPE: {this.state.loads[index]['sheet_type']}
-    //         </Tooltip>
-    //     )
-    // }
+    renderTooltip(index) {
+        return(
+            <Tooltip onClose={this.handleTooltipClose} onOpen={this.handleTooltipOpen} open={this.state.open} title={"SHEET TYPE: "  + this.state.loads[index]['sheet_type'].toString()}>
+                <div className="abc">HOVER HERE</div>
+            </Tooltip>
+        )
+    }
+
+    handleTooltipClose() {
+        this.setState({
+            open: false
+        });
+    }
+    
+    handleTooltipOpen() {
+        this.setState({
+            open: true
+        });
+    }
+
+    onKeyPress(event) {
+        if (event.which === 13) {
+          event.preventDefault();
+        }
+    }
     
     render() {
         if(!this.state.authenticatedUser) {
@@ -260,11 +282,11 @@ class Rates extends Component {
             value: conttypevalue,
             id: "conttypeid",
             onChange: this.onContTypeChange
-        };
+        };        
 
         return (
             <div>
-                <form autoComplete="off" onSubmit={this.handleUpload}>
+                <form onKeyPress={this.onKeyPress} autoComplete="off" onSubmit={this.handleUpload}>
                     <div style={{marginTop: '70px', fontFamily: 'Poppins', color: 'grey', marginLeft: '38px', display: 'inline-block'}}>
                         <div className="autocomplete" style={{width: '270px'}}>
                         <Autosuggest 
@@ -295,18 +317,41 @@ class Rates extends Component {
                         </div>
                     </div>
                     <div style={{marginTop: '70px', fontFamily: 'Poppins', color: 'grey', marginLeft: '10px', display: 'inline-block'}}>
-                        <Autosuggest 
+                        {/* <Autosuggest 
                             suggestions={contTypeSuggestions}
                             onSuggestionsFetchRequested={this.onContTypeSuggestionsFetchRequested}
                             onSuggestionsClearRequested={this.onSuggestionsClearRequested}
                             getSuggestionValue={getSuggestionValue}
                             renderSuggestion={renderSuggestion}
                             inputProps={contTypeProps}
-                        />
+                        /> */}
+                        <div className="styled-select slate">
+                            <select id="conttypeid" name="conttype" style={{width: '180px'}}>
+                                <option value="standard">Standard</option>
+                                <option value="reefer">Reefer</option>
+                                <option value="open_top">Open Top</option>
+                                <option value="iso_tank">     Iso Tank     </option>
+                                <option value="flat_rack">Flat Rack</option>                                                          
+                            </select>
+                        </div>
                         {/* <input value="standard" type="textbox" name="conttype" placeholder="Container Type" /> */}
                     </div>
                     <div style={{marginTop: '70px', fontFamily: 'Poppins', color: 'grey', marginLeft: '10px', display: 'inline-block'}}>        
-                        <input id="commodityid" value="general" style={{width: '180px'}} type="textbox" name="commodity" placeholder="Commodity" />
+                        {/* <input id="commodityid" value="general" style={{width: '180px'}} type="textbox" name="commodity" placeholder="Commodity" /> */}
+                        <div className="styled-select slate">
+                            <select id="commodityid" name="commodity" style={{width: '180px'}}>
+                                <option value="general">General</option>
+                                <option value="white_goods">White Goods</option>
+                                <option value="raw_cotton">Raw Cotton</option>
+                                <option value="cotton_and_yarn">Cotton & Yarn</option>
+                                <option value="sugar_and_rice">Sugar & Rice</option>
+                                <option value="pharmaceuticals">Pharmaceuticals</option>
+                                <option value="meat">Meat</option>
+                                <option value="fruits_and_vegetables">Fruits and Vegetables</option>
+                                <option value="fabric_and_textiles">Fabric & Textiles</option>
+                                <option value="rice_bran">Rice Bran</option>                            
+                            </select>
+                        </div>
                     </div>
                     <div style={{marginTop: '70px', fontFamily: 'Poppins', color: 'grey', marginLeft: '10px', display: 'inline-block'}}>
                         <label>Container Size </label>
@@ -321,6 +366,11 @@ class Rates extends Component {
                     </div>
                     <div style={{fontFamily: 'Poppins', color: 'grey', marginTop: '40px', marginLeft: '10px', display: 'inline-block'}}>
                         <input id="submitBtn" type="submit" name="Submit" />
+                    </div>
+                    <div style={{display: 'none'}} id="spinner" className="spinner">
+                        <div className="bounce1"></div>
+                        <div className="bounce2"></div>
+                        <div className="bounce3"></div>
                     </div>
                     <div style={{width: '100%', marginTop: '20px', backgroundColor: 'white'}}>                        
                     </div>
@@ -354,19 +404,19 @@ class Rates extends Component {
                         </div>
 
                         <div style={{marginBottom: '20px', position: 'relative', marginLeft: '78px', marginTop: '20px', fontFamily: 'Poppins', display: 'inline-block', color: 'grey'}}>
-                            <i className="fas fa-info-circle"></i>
+                            <i style={{marginRight: '5px'}} className="fas fa-info-circle"></i>
                              DATE
                             <div style={{fontSize: '13px', position: 'relative', fontFamily: 'Poppins', color: 'black'}}>{load['date']}</div>
                         </div> 
 
-                        <div style={{marginBottom: '20px', position: 'relative', marginLeft: '78px', marginTop: '20px', fontFamily: 'Poppins', display: 'inline-block', color: 'grey'}}>
+                        {/* <div style={{marginBottom: '20px', position: 'relative', marginLeft: '78px', marginTop: '20px', fontFamily: 'Poppins', display: 'inline-block', color: 'grey'}}>
                             <i className="fas fa-info-circle"></i>
                              MORE INFO
-                            <div style={{fontSize: '13px', position: 'relative', fontFamily: 'Poppins', color: 'black'}}>Click here</div>
-                        </div>
+                            <div style={{fontSize: '13px', position: 'relative', fontFamily: 'Poppins', color: 'black'}} onClick={this.handleTooltipOpen}>{this.renderTooltip(index)}</div>                            
+                        </div> */}
 
                         <div style={{marginBottom: '20px', position: 'relative', marginLeft: '78px', marginTop: '20px', fontFamily: 'Poppins', display: 'inline-block', color: 'grey'}}>
-                            <i className="fas fa-info-circle"></i>
+                            <i style={{marginRight: '5px'}} className="fas fa-info-circle"></i>
                              SHIPPING LINE
                             <div style={{fontSize: '13px', position: 'relative', fontFamily: 'Poppins', color: 'black'}}>{this.state.companyNames[index]}</div>
                         </div>    

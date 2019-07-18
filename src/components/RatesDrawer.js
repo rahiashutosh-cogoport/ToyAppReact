@@ -141,7 +141,7 @@ export default function RatesDrawer() {
     function renderClickAction(event) {
       event.preventDefault();
       console.log(event);
-      window.location.replace("http://localhost:3000/logout");
+      window.location.replace("http://localhost:3001/logout");  
     }
 
     return (

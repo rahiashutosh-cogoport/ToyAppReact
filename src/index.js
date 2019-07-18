@@ -9,6 +9,7 @@ import { Route, BrowserRouter as Router } from 'react-router-dom';
 import RatesDrawer from './components/RatesDrawer';
 import VerifyEmail from './components/VerifyEmail';
 import IndexPage from './components/IndexPage';
+import Logout from './components/Logout';
 
 const routing = (
     <Router>
@@ -19,6 +20,7 @@ const routing = (
         <Route path="/rates" component={RatesDrawer} />
         <Route path="/verify_email" component={VerifyEmail} />
         <Route path="/index" component={IndexPage} />
+        <Route path="/logout" component={Logout} />
       </div>
     </Router>
   )
