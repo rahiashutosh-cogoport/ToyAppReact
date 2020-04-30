@@ -8,7 +8,7 @@
     "@material-ui/icons": "^4.2.1",
     "autosuggest-highlight": "^3.1.1",
     "cogo-toast": "^3.1.0",
-    "jquery": "^3.4.1",
+    "jquery": "^3.5.0",
     "mdbreact": "^4.18.0",
     "react": "^16.8.6",
     "react-autocomplete": "^1.8.1",
