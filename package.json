@@ -19,7 +19,7 @@
     "react-js-pagination": "^3.0.2",
     "react-loader-spinner": "^2.3.0",
     "react-router-dom": "^5.0.1",
-    "react-scripts": "3.0.1",
+    "react-scripts": "3.4.4",
     "universal-cookie": "^4.0.2"
   },
   "scripts": {
